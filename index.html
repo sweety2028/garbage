@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Garbage Collection System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Login to Smart Garbage System</h2>
+            
+            <div class="login-options">
+                <div class="login-role-selector">
+                    <button class="login-role-btn active" data-role="citizen">Citizen</button>
+                    <button class="login-role-btn" data-role="worker">Worker</button>
+                    <button class="login-role-btn" data-role="admin">Admin</button>
+                </div>
+                
+                <!-- Citizen Login Form -->
+                <div id="citizenLogin" class="login-form active">
+                    <h3>Citizen Login</h3>
+                    <div class="form-group">
+                        <label for="citizenEmail">Email or Phone</label>
+                        <input type="text" id="citizenEmail" placeholder="Enter email or phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="citizenPassword">Password</label>
+                        <input type="password" id="citizenPassword" placeholder="Enter password">
+                    </div>
+                    <button class="btn login-btn">Login</button>
+                    <div class="login-links">
+                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <a href="#" class="register-link">New User? Register</a>
+                    </div>
+                    <div class="social-login">
+                        <button class="btn-social google">
+                            <i class="fab fa-google"></i> Continue with Google
+                        </button>
+                        <button class="btn-social facebook">
+                            <i class="fab fa-facebook"></i> Continue with Facebook
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Worker Login Form -->
+                <div id="workerLogin" class="login-form">
+                    <h3>Worker Login</h3>
+                    <div class="form-group">
+                        <label for="workerId">Employee ID</label>
+                        <input type="text" id="workerId" placeholder="Enter employee ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="workerPin">PIN Code</label>
+                        <input type="password" id="workerPin" placeholder="Enter 4-digit PIN" maxlength="4">
+                    </div>
+                    <div class="form-group">
+                        <label for="workerLocation">Verify Location</label>
+                        <div class="location-verify">
+                            <input type="text" id="workerLocation" placeholder="Current location" readonly>
+                            <button class="btn-secondary btn-small" id="getLocation">
+                                <i class="fas fa-map-marker-alt"></i> Get Location
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn login-btn">Start Shift</button>
+                    <div class="login-links">
+                        <a href="#" class="forgot-pin">Forgot PIN?</a>
+                    </div>
+                </div>
+                
+                <!-- Admin Login Form -->
+                <div id="adminLogin" class="login-form">
+                    <h3>Admin Login</h3>
+                    <div class="form-group">
+                        <label for="adminUsername">Username</label>
+                        <input type="text" id="adminUsername" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin2fa">2FA Code</label>
+                        <input type="text" id="admin2fa" placeholder="Enter 6-digit code" maxlength="6">
+                        <small>Check your authenticator app</small>
+                    </div>
+                    <button class="btn login-btn">Login as Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-trash-alt"></i>
+                    <div>
+                        <h1>Smart Garbage Collection System</h1>
+                        <p>AI-Powered Waste Management Solution</p>
+                    </div>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-info">
+                            <div class="user-name">Guest User</div>
+                            <div class="user-role" id="currentRole">Not Logged In</div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn-login" id="loginBtn">Login</button>
+                            <button class="btn-logout" id="logoutBtn" style="display: none;">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Role Selector -->
+    <div class="container">
+        <div class="role-selector" id="roleSelector">
+            <div class="role-btn active" data-role="citizen">
+                <i class="fas fa-user"></i>
+                <span>Citizen Portal</span>
+            </div>
+            <div class="role-btn" data-role="worker">
+                <i class="fas fa-hard-hat"></i>
+                <span>Worker Portal</span>
+            </div>
+            <div class="role-btn" data-role="admin">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Admin Portal</span>
+            </div>
+            <div class="role-btn" data-role="ai">
+                <i class="fas fa-robot"></i>
+                <span>AI Functions</span>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Sidebar Menu -->
+            <div class="sidebar" id="sidebar">
+                <div class="menu-title" id="menuTitle">
+                    <i class="fas fa-user"></i>
+                    <span>Citizen Options</span>
+                </div>
+                <ul class="menu-list" id="menuList">
+                    <!-- Dynamic menu items will be loaded here -->
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="page-header">
+                    <h2 class="page-title" id="pageTitle">Welcome to Smart Garbage System</h2>
+                    <div class="page-actions" id="pageActions"></div>
+                </div>
+                
+                <!-- Dynamic Content Area -->
+                <div id="contentArea">
+                    <!-- Content will be loaded dynamically -->
+                    <div class="welcome-message">
+                        <div class="welcome-card">
+                            <h3><i class="fas fa-info-circle"></i> Getting Started</h3>
+                            <p>Please select a role and login to access the system features.</p>
+                            <div class="feature-highlights">
+                                <div class="feature">
+                                    <i class="fas fa-camera"></i>
+                                    <h4>Report Garbage</h4>
+                                    <p>Take photos and report garbage issues instantly</p>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    <h4>Track Status</h4>
+                                    <p>Real-time tracking of complaint resolution</p>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-robot"></i>
+                                    <h4>AI Powered</h4>
+                                    <p>Smart routing and image verification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Smart Garbage System</h4>
+                    <p>AI-powered waste management solution for cleaner cities.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: info@smartgarbage.com</p>
+                    <p>Phone: +91-9876543210</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Download App</h4>
+                    <div class="app-links">
+                        <button class="btn-app">
+                            <i class="fab fa-google-play"></i> Google Play
+                        </button>
+                        <button class="btn-app">
+                            <i class="fab fa-app-store"></i> App Store
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2024 Smart Garbage Collection System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script type="module">
+            // Firebase initialization (module) — exposes `getFirebasePublicDocs()` globally
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+            import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+            import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyDGp4MK4Ox7idQrLJiBXB2SsgGXXAbM8OM",
+                authDomain: "smart-clean-city.firebaseapp.com",
+                projectId: "smart-clean-city",
+                storageBucket: "smart-clean-city.firebasestorage.app",
+                messagingSenderId: "201259037040",
+                appId: "1:201259037040:web:71d55fae9f552348eb9fb5",
+                measurementId: "G-6VVG6V875L"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            console.log("Firebase Connected Successfully ✅");
+
+
+            // Sign in anonymously so Firestore rules (if allow) can be used for reads.
+            signInAnonymously(auth).catch(err => console.warn('Firebase anon sign-in failed', err));
+
+            // Expose a helper to fetch 'publicData' collection documents as simple objects
+            window.getFirebasePublicDocs = async function() {
+                try {
+                    const snap = await getDocs(collection(db, 'publicData'));
+                    const docs = [];
+                    snap.forEach(d => docs.push({ id: d.id, data: d.data() }));
+                    return docs;
+                } catch (err) {
+                    console.error('getFirebasePublicDocs error', err);
+                    throw err;
+                }
+            };
+
+            onAuthStateChanged(auth, user => {
+                window.firebaseUser = user || null;
+            });
+        </script>
+    <script src="script.js"></script>
+</body>
+</html>
